@@ -1,0 +1,7 @@
+.venv
+
+generated_images/*
+
+generated_text/*
+
+upload_images/*
