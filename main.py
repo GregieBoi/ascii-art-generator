@@ -9,6 +9,7 @@ import itertools
 import threading
 import time
 import ntpath
+import numpy as np
 
 BRIGHTNESS = {'0': 0.9629629629629629,
               '1': 0.7407407407407407,
@@ -163,6 +164,9 @@ def generate_ascii_art(image, resolution, characters):
   image = cv2.imread(image)
   gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
   resized_gray_image = cv2.resize(gray_image, (int(image.shape[1] * resolution/100), int(image.shape[0] * resolution/100)))
+  kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+  sharpened_image = cv2.filter2D(resized_gray_image, -1, kernel)
+  resized_gray_image = sharpened_image
 
   height = resized_gray_image.shape[0]
   width = resized_gray_image.shape[1]
@@ -176,7 +180,7 @@ def generate_ascii_art(image, resolution, characters):
       brightness_top = int(resized_gray_image[y*2, x])
       brightness_bottom = int(resized_gray_image[(y*2)+1, x])
       brightness = int((brightness_top + brightness_bottom)/2)
-      ascii_art += brightness_map[brightness]
+      ascii_art += random.choice(brightness_map[brightness])
     ascii_art += '\n'
 
   return ascii_art
@@ -184,7 +188,7 @@ def generate_ascii_art(image, resolution, characters):
 def get_mapping(characters):
 
   map = defaultdict(str)
-  map[0] = ' '
+  map[0] = [' ']
 
   for i in range(1, 256):
     brightness = i/255
@@ -203,16 +207,16 @@ def get_mapping(characters):
       elif brightness == keys[m]:
         break
       old_m = m
-    map[i] = random.choice(characters[keys[m]])
+    map[i] = characters[keys[m]]
 
   return map
 
-def save_ascii_art(art, path):
+def save_ascii_art(art, path, resolution):
   basename = ntpath.basename(path)
   filename = ntpath.splitext(basename)[0]
 
   # save the ascii art to a text file
-  with open('generated_text/' + filename + '.txt', 'w') as f:
+  with open('generated_text/' + filename + str(resolution) + '.txt', 'w') as f:
     f.write(art)
 
   lines = art.splitlines()
@@ -228,7 +232,7 @@ def save_ascii_art(art, path):
     d.text((0, y_pos), line, font=font, fill=(255, 255, 255))
     y_pos += 12
 
-  image.save('generated_images/' + filename + '.jpg')
+  image.save('generated_images/' + filename + str(resolution) + '.jpg')
 
 class SpinnerThread(threading.Thread):
     def __init__(self, message, delay=0.1):
@@ -252,7 +256,7 @@ def main():
   check_args()
   characters = fetch_characters()
   art = generate_ascii_art(sys.argv[1], int(sys.argv[3]), characters)
-  save_ascii_art(art, sys.argv[1])
+  save_ascii_art(art, sys.argv[1], sys.argv[3])
 
 if __name__ == '__main__':
   spinner = SpinnerThread("Generating ascii art...")
