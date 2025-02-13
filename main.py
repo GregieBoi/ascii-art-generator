@@ -232,7 +232,7 @@ def save_ascii_art(art, path, resolution):
     d.text((0, y_pos), line, font=font, fill=(255, 255, 255))
     y_pos += 12
 
-  image.save('generated_images/' + filename + str(resolution) + '.jpg')
+  image.save('generated_images/' + filename + str(resolution) + '.jpg', quality=10, optimize=True)
 
 class SpinnerThread(threading.Thread):
     def __init__(self, message, delay=0.1):
