@@ -5,3 +5,5 @@ generated_images/*
 generated_text/*
 
 upload_images/*
+
+.DS_Store
